@@ -2,12 +2,9 @@ import sqlite3
 
 try:
     conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
-    print("Database connected successfully")
 except Exception as err:
     print(err)
-    print("Creating database...")
     conn = sqlite3.connect("posdb.db")
-    print("Database created successfully")
 
     cursor = conn.cursor()
     cursor.execute("CREATE TABLE products (product_id INTEGER PRIMARY KEY NOT NULL, product_name TEXT NOT NULL,packaging_units REAL NOT NULL , price_per_unit REAL NOT NULL)")
@@ -24,5 +21,5 @@ except Exception as err:
 
 finally:
     conn.close()
-    print("Database closed")
+
     

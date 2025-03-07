@@ -1,8 +1,11 @@
 
-#Try to Integrate Tkinter Notebook to the GUI
+#Figure out how to switch between frames
 #Create a Log In System and GUI
+    #Connect to sqlite3 db
 #Create a Sign Up System and GUI
+    #Connect to sqlite3 db
 #Create a Main Menu System and GUI
+#Try to Integrate Tkinter Notebook to the GUI
 #GUI for Adding products
 #GUI for Viewing products using tables
 #Sales View in a table when a product is sold
