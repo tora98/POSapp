@@ -31,39 +31,34 @@ class main(ttk.Frame):
     def __init__(self, master, user):
         super().__init__(master)
 
-        self.columnconfigure(0, weight=3)
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=2)
-
-        self.lbl_user = ttk.Label(self, text = user).grid(row=0, column=0, sticky="nw")
-        self.lbl_date = ttk.Label(self, text = "Date:").grid(row=0, column=1, sticky="ne")
+        self.user = user
+        self.lbl_user = ttk.Label(self, text = self.user).place(relx=0, rely=0, relwidth=0.5, relheight=0.1)
+        self.lbl_date = ttk.Label(self, text = "Date:", anchor="e").place(relx=0.5, rely=0, relwidth=0.5, relheight=0.1)
 
         self.frame1 = self.entry_frame(self)
         self.frame2 = self.table_frame(self)
 
-        self.pack(fill="both", expand=True, ipadx=10, ipady=10)
+        self.pack(expand=True, fill="both", ipadx=10, ipady=10)
 
     class entry_frame(ttk.Frame):
         def __init__(self, master):
             super().__init__(master)
 
-            self.frame1 = ttk.Frame(self)
-            self.columnconfigure((0,1), weight=1, uniform="1")
-            self.rowconfigure((0,1,2,3,4),weight=1)
-            self.lbl_item = ttk.Label(self.frame1, text = "Item Name:").grid(column=0, row=0, padx=5)
-            self.entry_item = ttk.Entry(self.frame1, font=("Helvetica", 20)).grid(column=0, row=1, rowspan=2, padx=5)
-            self.lbl_quantity = ttk.Label(self.frame1, text = "Quantity:").grid(column=0, row=2, padx=5)
-            self.entry_quantity = ttk.Entry(self.frame1, font=("Helvetica", 20)).grid(column=0, row=3, padx=5)
-            self.lbl_price = ttk.Label(self.frame1, text = "Price:", font=("Helvetica", 20)).grid(column=1, row=3, sticky="w")
-            self.frame1.pack(fill="both", expand=True)
 
-            self.frame2 = ttk.Frame(self)
-            self.btn_add = ttk.Button(self.frame2, text = "Add", command=self.add_item).grid(column=0, row=4, pady=10)
-            self.btn_clear = ttk.Button(self.frame2, text = "Clear", command=self.clear_entry).grid(column=1, row=4, pady=10)
-            self.frame2.pack(fill="x", expand=True)
+            self.frame1 = ttk.Frame(self, border=1, relief="solid")
+            self.lbl_item = ttk.Label(self.frame1, text = "Item Name:").pack()
+            self.entry_item = ttk.Entry(self.frame1, font=("Helvetica", 30)).pack(pady=(0,5), padx=10, expand=True, fill="x")
+            self.lbl_quantity = ttk.Label(self.frame1, text = "Quantity:").pack()
+            self.entry_quantity = ttk.Entry(self.frame1, font=("Helvetica", 30)).pack(pady=(0,5), padx=10, expand=True, fill="x")
+            self.lbl_price = ttk.Label(self.frame1, text = "Price:", font=("Helvetica", 20)).pack(pady=10, expand=True, fill="both")
+            self.frame1.pack(expand=True, fill="both", ipadx=5)
 
-            self.grid(row=1, column=0, sticky="nesw", ipadx=5, ipady=5)
+            self.frame2 = ttk.Frame(self, border=1, relief="solid")
+            self.btn_add = ttk.Button(self.frame2, text = "Add", command=self.add_item).pack(side="left", expand=True)
+            self.btn_clear = ttk.Button(self.frame2, text = "Clear", command=self.clear_entry).pack(side="left", expand=True)
+            self.frame2.pack(expand=True, fill="both", ipadx=5)
+
+            self.place(relx=0, rely=0.1, relwidth=0.6, relheight=0.9)
 
         def add_item(self):
             pass
@@ -83,9 +78,9 @@ class main(ttk.Frame):
             self.tree.heading("item", text="Item Name")
             self.tree.heading("quantity", text="Quantity")
             self.tree.heading("price", text="Price")
-            self.tree.pack(fill="both", expand=True)
+            self.tree.pack(padx=10, pady=5, fill="y", expand=True)
 
-            self.grid(row=1, column=1, sticky="nesw")
+            self.place(relx=0.6, rely=0.1, relwidth=0.4, relheight=0.9)
 
 class add_user(ttk.Frame):
     def __init__(self, master):
