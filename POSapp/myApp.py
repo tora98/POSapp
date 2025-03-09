@@ -12,10 +12,7 @@ class Application(tk.Tk):
         self.minsize(1000,600)
 
         #add frame segments to window
-        # self.sales = Sales(self)
-        # self.table = Table(self)
-        # self.buttons = Buttons(self, self.sales)
-        self.current_frame = frames.Login(self)
+        self.current_frame = frames.login(self)
         
         #run the mainloop
         self.mainloop()

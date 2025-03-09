@@ -1,5 +1,5 @@
-
-#Figure out how to switch between frames
+#using grid is cofusing, use pack instead to make the sales work
+#Figure out how to switch between frames using function returns
 #Create a Log In System and GUI
     #Connect to sqlite3 db
 #Create a Sign Up System and GUI
