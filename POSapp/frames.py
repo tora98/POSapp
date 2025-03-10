@@ -58,7 +58,7 @@ class main(ttk.Frame):
             self.btn_clear = ttk.Button(self.frame2, text = "Clear", command=self.clear_entry).pack(side="left", expand=True)
             self.frame2.pack(expand=True, fill="both", ipadx=5)
 
-            self.place(relx=0, rely=0.1, relwidth=0.6, relheight=0.9)
+            self.place(relx=0.01, rely=0.11, relwidth=0.58, relheight=0.88)
 
         def add_item(self):
             pass
@@ -78,7 +78,7 @@ class main(ttk.Frame):
             self.tree.heading("item", text="Item Name")
             self.tree.heading("quantity", text="Quantity")
             self.tree.heading("price", text="Price")
-            self.tree.pack(padx=10, pady=5, fill="y", expand=True)
+            self.tree.pack(padx=(0,10), pady=5, fill="y", expand=True)
 
             self.place(relx=0.6, rely=0.1, relwidth=0.4, relheight=0.9)
 
