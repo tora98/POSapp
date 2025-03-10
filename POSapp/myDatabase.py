@@ -19,6 +19,9 @@ except Exception as err:
     print("Table 'users' created successfully")
     conn.commit()
 
+    cursor.execute("INSERT INTO users (username, complete_name, password) VALUES ('Admin', 'Administrator', 'admin')")
+    conn.commit()
+
 finally:
     conn.close()
 
