@@ -10,6 +10,7 @@ class Application(tk.Tk):
         self.title("Delles Agri-Poultry Supply")
         self.geometry("1000x600")
         self.minsize(1000,600)
+        self.state("zoomed")
 
         #add frame segments to window
         self.current_frame = frames.login(self)

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import datetime as dt
 import sqlite3
+from ttkwidgets.autocomplete import AutocompleteCombobox
 
 class login(ttk.Frame):
     def __init__(self, master):
@@ -36,10 +37,12 @@ class tabs(ttk.Notebook):
         self.maintab = main(self, user)
         self.productstab = products(self)
         self.addproductstab = add_products(self)
+        self.adduserstab = add_user(self)
         self.abouttab = about(self)
         self.add(self.maintab, text="Daily Sales")
         self.add(self.productstab, text="Products List")
         self.add(self.addproductstab, text="Add Products")
+        self.add(self.adduserstab, text = "Users")
         self.add(self.abouttab, text="About")   
 
         self.pack(expand=True, fill="both") 
@@ -75,20 +78,17 @@ class main(ttk.Frame):
             self.config(border=1, relief="solid")
 
             self.pack(side="left", expand=True, fill="both")
-            # self.place(relx=0.01, rely=0.11, relwidth=0.58, relheight=0.88)
 
         class frame1(ttk.Frame):
             def __init__(self, master):
-                super().__init__(master)
-
-                #TODO: Show Autocomplete when typing        
+                super().__init__(master)       
 
                 self.style = ttk.Style()
                 self.style.configure("TButton", font=("Helvetica", 15))
 
                 self.lbl_item = ttk.Label(self, text = "Item Name:", font=("Helvetica", 20))
                 self.lbl_item.pack(pady=(10,0))
-                self.combo_item = ttk.Combobox(self, font=("Helvetica", 30))
+                self.combo_item = AutocompleteCombobox(self, font=("Helvetica", 30), completevalues=self.insert_values())
                 self.combo_item.pack(pady=(0,10), padx=10, expand=True, fill="x")
                 self.combo_item['values'] = self.insert_values()
                 self.lbl_quantity = ttk.Label(self, text = "Quantity:", font=("Helvetica", 20))
@@ -151,6 +151,8 @@ class products(ttk.Frame):
         super().__init__(master)
 
         #TODO: Add scrollbar to treeview 
+        #TODO: Logic for Delete Function 
+        #TODO: Logic for Update Function 
 
         self.tree = ttk.Treeview(self, columns=("product_id", "product_name", "manufacturer", "packaging_units", "price_per_unit"), show="headings")
         self.tree.column("product_id", width=0) 
@@ -167,6 +169,8 @@ class products(ttk.Frame):
 
         self.show = self.refresh_table()
 
+        self.btn_refresh = ttk.Button(self, text = "Refresh", command=self.refresh_table)
+        self.btn_refresh.pack(side="left", pady=10, expand=True)
         self.btn_update = ttk.Button(self, text = "Update", command=self.update_product)
         self.btn_update.pack(side="left", pady=10, expand=True)
         self.btn_delete = ttk.Button(self, text = "Delete", command=self.delete_product)
@@ -175,6 +179,7 @@ class products(ttk.Frame):
         self.pack(expand=True, fill="both", ipadx=10, ipady=10)
 
     def refresh_table(self):
+        self.tree.delete(*self.tree.get_children())
         conn = sqlite3.connect("posdb.db")
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM products")
@@ -204,8 +209,6 @@ class products(ttk.Frame):
 class add_products(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-
-        #TODO: Check if product already exists before adding
 
         self.style = ttk.Style()
         self.style.configure("TButton", font=("Helvetica", 15))
@@ -250,6 +253,7 @@ class add_products(ttk.Frame):
                 self.lbl_error.config(text = "Product added successfully.")
                 self.clear_entry()
 
+            # Need to catch IntegrityError and other error if possible
             except Exception as err:
             # except sqlite3.IntegrityError:
                 # self.lbl_error.config(text = "Product already exists.")
@@ -261,35 +265,66 @@ class add_products(ttk.Frame):
         self.entry_manufacturer.delete(0, "end")
         self.entry_packaging_units.delete(0, "end")
         self.entry_price_per_unit.delete(0, "end")
+        self.lbl_error.config(text="")
 
 class add_user(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-
-        self.myframe = ttk.Frame(self, bg="light blue")
-
-        self.lbl_complete_name = ttk.Label(self.myframe, text = "Complete Name:", font=("Helvetica", 20))	
-        self.entry_complete_name = ttk.Entry(self.myframe, font = ("Arial", 30))
-        self.lbl_username = ttk.Label(self.myframe, text = "User Name:", font=("Helvetica", 20))
-        self.entry_username = ttk.Entry(self.myframe, font = ("Arial", 30))
-        self.lbl_password = ttk.Label(self.myframe, text = "Password:", font=("Helvetica", 20))
-        self.entry_password = ttk.Entry(self.myframe, font = ("Arial", 30))
-        self.btn_back = ttk.Button(self.myframe, text = "Back", command=self.back)
-
-        self.lbl_username.pack(pady = 5)
-        self.entry_username.pack()
-        self.lbl_password.pack(pady = 5)
-        self.entry_password.pack()
-        self.lbl_complete_name.pack(pady = 5)
+        self.lbl_complete_name = ttk.Label(self, text = "Complete Name:", font=("Helvetica", 20))	
+        self.lbl_complete_name.pack(pady = (10, 0))
+        self.entry_complete_name = ttk.Entry(self, font = ("Arial", 30))
         self.entry_complete_name.pack()
-        self.btn_back.pack(pady = 5)
+        self.lbl_username = ttk.Label(self, text = "User Name:", font=("Helvetica", 20))
+        self.lbl_username.pack(pady = (10, 0))
+        self.entry_username = ttk.Entry(self, font = ("Arial", 30))
+        self.entry_username.pack()
+        self.lbl_password = ttk.Label(self, text = "Password:", font=("Helvetica", 20))
+        self.lbl_password.pack(pady = (10, 0))
+        self.entry_password = ttk.Entry(self, font = ("Arial", 30))
+        self.entry_password.pack()
 
-        self.myframe.place(x = 0, y = 0, relwidth = 1, relheight = 1)
-        self.place(x = 0, y = 0, relwidth = 1, relheight = 1)
+        self.lbl_error = ttk.Label(self, text = "")
+        self.lbl_error.pack(pady=10)
 
-    def back(self):
-        self.destroy()
+        self.btn_add = ttk.Button(self, text = "Add", command=self.add_user)
+        self.btn_add.pack(side="left", pady=10, expand=True)
+        self.btn_clear = ttk.Button(self, text = "Clear", command=self.clear_entry)
+        self.btn_clear.pack(side="left", pady=10, expand=True)
+
+        self.pack(expand=True, fill="both")
+
+    def add_user(self):
+        if self.entry_complete_name.get() == "" or self.entry_username.get() == "" or self.entry_password.get() == "":
+            self.lbl_error.config(text = "Please fill out all fields.", )
+        else:
+            conn = sqlite3.connect("posdb.db")
+            cursor = conn.cursor()
+            try:
+                cursor.execute(f"INSERT INTO employees (username, complete_name, password) VALUES ('{self.entry_username.get()}', '{self.entry_complete_name.get()}', '{self.entry_password.get()}')")
+                conn.commit()
+                conn.close()
+                self.lbl_error.config(text = "User added successfully.")
+                self.clear_entry()
+
+            # Need to catch IntegrityError and other error if possible
+            except Exception as err:
+            # except sqlite3.IntegrityError:
+                # self.lbl_error.config(text = "User already exists.")
+                self.lbl_error.config(text = str(err))
+
+
+    def clear_entry(self):
+        self.entry_complete_name.delete(0, "end")
+        self.entry_username.delete(0, "end")
+        self.entry_password.delete(0, "end")
+        self.lbl_error.config(text="")
+
+class user_list(ttk.Frame):
+
+    #TODO: Make GUI for showing User list if current user is admin only
+
+    pass
 
 class about(ttk.Frame):
     def __init__(self, master):
