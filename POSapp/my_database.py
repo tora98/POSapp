@@ -1,14 +1,15 @@
+'''
+Database
+'''
 import sqlite3
 
 try:
     conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
-except Exception as err:
+except sqlite3.OperationalError as err:
     print(err)
     conn = sqlite3.connect("posdb.db")
 
     cursor = conn.cursor()
-    cursor.execute("PRAGMA foreign_keys = ON")
-    conn.commit()
 
     cursor.execute('''CREATE TABLE products (
 			product_id INTEGER PRIMARY KEY NOT NULL,
@@ -47,7 +48,4 @@ except Exception as err:
 					'admin')''')
     conn.commit()
 
-finally:
     conn.close()
-
-    
