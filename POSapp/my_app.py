@@ -6,7 +6,7 @@ Main application class
 import tkinter as tk
 
 #Local Library Import
-from frames import Login
+from login import Login
 
 class Application(tk.Tk):
     '''

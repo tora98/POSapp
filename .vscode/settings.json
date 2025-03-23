@@ -1,3 +1,4 @@
 {
-    "basedpyright.disableLanguageServices": true
+    "basedpyright.disableLanguageServices": true,
+    "sqltools.useNodeRuntime": true
 }
