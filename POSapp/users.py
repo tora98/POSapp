@@ -56,7 +56,7 @@ class Users(ttk.Frame):
             if complete_name == "" or username == "" or password == "":
                 self.lbl_error.config(text = "Please fill out all fields.", )
             else:
-                conn = sqlite3.connect("posdb.db")
+                conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
                 cursor = conn.cursor()
                 try:
                     cursor.execute(f"INSERT INTO employees (username, complete_name, password) VALUES ('{self.entry_username.get()}', '{self.entry_complete_name.get()}', '{self.entry_password.get()}')")
