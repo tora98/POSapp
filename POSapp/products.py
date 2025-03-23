@@ -73,7 +73,7 @@ class Products(ttk.Frame):
             if self.entry_product_name.get() == "" or self.entry_manufacturer.get() == "" or self.entry_packaging_units.get() == "" or self.entry_price_per_unit.get() == "":
                 self.lbl_error.config(text = "Please fill out all fields.")
             else:
-                conn = sqlite3.connect("posdb.db")
+                conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
                 cursor = conn.cursor()
                 try:
                     product_name = self.entry_product_name.get()
@@ -101,7 +101,7 @@ class Products(ttk.Frame):
             self.lbl_error.config(text="")
 
         def update(self):
-            conn = sqlite3.connect("posdb.db")
+            conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
             cursor = conn.cursor()
 
             get_product_name = self.entry_product_name.get()
@@ -169,7 +169,7 @@ class Products(ttk.Frame):
             Refreshes the table
             '''
             self.tree.delete(*self.tree.get_children())
-            conn = sqlite3.connect("posdb.db")
+            conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM products")
             rows = cursor.fetchall()
@@ -182,7 +182,7 @@ class Products(ttk.Frame):
             Deletes a product from the database
             '''
             selected_item = self.tree.item(self.tree.selection())
-            conn = sqlite3.connect("posdb.db")
+            conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
             cursor = conn.cursor()
             cursor.execute(f"DELETE FROM products WHERE product_id = {selected_item['values'][0]}")
             conn.commit()
