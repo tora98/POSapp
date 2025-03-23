@@ -7,6 +7,7 @@ import tkinter as tk
 
 #Local Library Import
 from login import Login
+import my_database
 
 class Application(tk.Tk):
     '''
@@ -27,5 +28,7 @@ class Application(tk.Tk):
 
 #call the app to run
 if __name__ == "__main__":
+    #Create or Check if Datbase Exists
+    my_database.create_database()
     #initialize the app
     my_app: Application = Application()
