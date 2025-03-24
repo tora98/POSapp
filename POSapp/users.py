@@ -41,12 +41,13 @@ class Users(ttk.Frame):
 
             self.btn_add = ttk.Button(self, text = "Add", command=self.add_user)
             self.btn_add.pack(side="left", pady=10, expand=True)
+            self.btn_add.bind("<Return>", self.add_user)
             self.btn_clear = ttk.Button(self, text = "Clear", command=self.clear_entry)
             self.btn_clear.pack(side="left", pady=10, expand=True)
 
             self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
 
-        def add_user(self):
+        def add_user(self, event=None):
             '''
             Add a new user to the database
             '''
@@ -93,9 +94,11 @@ class Users(ttk.Frame):
             self.tree.heading("complete_name", text = "Complete Name")
             self.tree.pack(expand=True, fill="both")
 
+            self.refresh_table()
+
             self.btn_delete = ttk.Button(self, text="Delete", command=self.delete_item)
             self.btn_delete.pack(pady=10, side="left", expand=True)
-            self.btn_update = ttk.Button(self, text="Update", command=self.update_item)
+            self.btn_update = ttk.Button(self, text="Referesh", command=self.refresh_table)
             self.btn_update.pack(pady=10, side="left", expand=True)
 
             self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
@@ -118,4 +121,11 @@ class Users(ttk.Frame):
             '''
             Refresh table
             '''
-            pass
+            self.tree.delete(*self.tree.get_children())
+            conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM employees")
+            rows = cursor.fetchall()
+            for row in rows:
+                self.tree.insert("", "end", values=row)
+            conn.close()
