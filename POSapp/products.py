@@ -70,7 +70,12 @@ class Products(ttk.Frame):
             '''
             Add a product to the database
             '''
-            if self.entry_product_name.get() == "" or self.entry_manufacturer.get() == "" or self.entry_packaging_units.get() == "" or self.entry_price_per_unit.get() == "":
+            get_product_name = self.entry_product_name.get()
+            get_manufacturer = self.entry_manufacturer.get()
+            get_packaging_units = self.entry_packaging_units.get()
+            get_price_per_unit = self.entry_price_per_unit.get()
+
+            if get_product_name == "" or get_manufacturer == "" or get_packaging_units == "" or get_price_per_unit == "":
                 self.lbl_error.config(text = "Please fill out all fields.")
             else:
                 conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
@@ -130,8 +135,6 @@ class Products(ttk.Frame):
             super().__init__(master)
 
             #TODO: Add scrollbar to treeview 
-            #TODO: Logic for Delete Function 
-            #TODO: Logic for Update Function 
 
             self.tree = ttk.Treeview(master = self, columns=("product_id", "product_name", "manufacturer", "packaging_units", "price_per_unit"), show="headings")
             self.tree.column("product_id", width=0) 
@@ -153,7 +156,7 @@ class Products(ttk.Frame):
             self.btn_delete = ttk.Button(self, text = "Delete", command=self.delete_product)
             self.btn_delete.pack(side="left", pady=10, expand=True)
 
-            if self.tree.selection():
+            if self.tree.selection() != ():
                 product_ID = self.tree.item(self.tree.selection())['values'][0]
                 product_name = self.tree.item(self.tree.selection())['values'][1]
                 manufacturer = self.tree.item(self.tree.selection())['values'][2]
@@ -161,6 +164,9 @@ class Products(ttk.Frame):
                 price_per_unit = self.tree.item(self.tree.selection())['values'][4]
 #TODO:
                 master.ProductEntry(product_ID, product_name, manufacturer, packaging_units, price_per_unit)
+
+            else:
+                pass
 
             self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
 
