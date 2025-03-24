@@ -136,8 +136,8 @@ class Main(ttk.Frame):
 
             self.btn_delete = ttk.Button(self, text="Delete", command=self.delete_item)
             self.btn_delete.pack(pady=10, side="left", expand=True)
-            self.btn_update = ttk.Button(self, text="Update", command=self.update_item)
-            self.btn_update.pack(pady=10, side="left", expand=True)
+            self.btn_refresh = ttk.Button(self, text="Refresh", command=self.refresh_table)
+            self.btn_refresh.pack(pady=10, side="left", expand=True)
 
             self.pack(side="left", expand=True, fill="both")
 
@@ -148,12 +148,6 @@ class Main(ttk.Frame):
             selected = self.tree.selection()
             for item in selected:
                 self.tree.delete(item)
-
-        def update_item(self):
-            '''
-            Update item in table
-            '''
-            pass
 
         def refresh_table(self):
             '''
@@ -167,6 +161,3 @@ class Main(ttk.Frame):
             for row in rows:
                 self.tree.insert("", "end", values=row)
             conn.close()
-
-            #TODO: Logic for Delete Function
-            #TODO: Logic for Update Function
