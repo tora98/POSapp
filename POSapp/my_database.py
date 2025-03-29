@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def create_database():
     try:
         conn = sqlite3.connect('file:posdb.db?mode=ro', uri=True)
@@ -45,5 +46,4 @@ def create_database():
         else:
             cursor.execute('''INSERT INTO employees (username, complete_name, password) VALUES ('Admin', 'Administrator', 'admin')''')
             conn.commit()
-    finally:
-        conn.close()
+    conn.close()

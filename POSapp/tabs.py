@@ -7,12 +7,14 @@ from users import Users
 from about import About
 from settings import Settings
 
+
 class Tabs(ttk.Notebook):
     '''
     Tabs for navigation
     '''
+
     def __init__(self, master, user):
-        super().__init__(master)    
+        super().__init__(master)
 
         if user == "Admin":
             self.maintab = Main(self, user)
@@ -22,9 +24,9 @@ class Tabs(ttk.Notebook):
             self.settingstab = Settings(self)
             self.add(self.maintab, text="Daily Sales")
             self.add(self.productstab, text="Products")
-            self.add(self.adduserstab, text = "Users")
-            self.add(self.abouttab, text="About") 
-            self.add(self.settingstab, text="Settings")  
+            self.add(self.adduserstab, text="Users")
+            self.add(self.abouttab, text="About")
+            self.add(self.settingstab, text="Settings")
 
         else:
             self.maintab = Main(self, user)
@@ -33,4 +35,4 @@ class Tabs(ttk.Notebook):
             self.add(self.maintab, text="Daily Sales")
             self.add(self.productstab, text="Products List")
 
-        self.pack(expand=True, fill="both") 
+        self.pack(expand=True, fill="both")
