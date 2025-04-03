@@ -12,7 +12,7 @@ class About(ttk.Frame):
 
         self.lbl_about = ttk.Label(
             self,
-            text="   This is a POS System App\n\n               Created by:\n\n       Miler Lubid Bayangan\nFor Educational Purposes Only",
+            text="   This is a POS System App\n\n               Created by:\n\n            tora98\nFor Educational Purposes Only",
             anchor="center",
             font=("Helvetica", 20)
             )

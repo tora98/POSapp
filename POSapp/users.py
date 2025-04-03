@@ -110,8 +110,14 @@ class UserList(ttk.Frame):
         Delete item from table
         '''
         selected = self.tree.selection()
-        for item in selected:
-            self.tree.delete(item)
+        selected_cname = self.tree.item(selected[0], "values")
+        username = selected_cname[1]
+        conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM employees WHERE username = '{username}'")
+        conn.commit()
+        conn.close()
+        self.refresh_table()
 
     def update_item(self):
         '''
@@ -126,8 +132,10 @@ class UserList(ttk.Frame):
         self.tree.delete(*self.tree.get_children())
         conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM employees")
+        cursor.execute("SELECT username, complete_name FROM employees")
         rows = cursor.fetchall()
         for row in rows:
-            self.tree.insert("", "end", values=row)
+            username = row[0]
+            complete_name = row[1]
+            self.tree.insert("", "end", values=(complete_name, username))
         conn.close()

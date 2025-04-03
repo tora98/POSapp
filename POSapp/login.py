@@ -3,8 +3,8 @@ Application Frames
 '''
 import tkinter as tk
 from tkinter import ttk
-import datetime as dt
 import sqlite3
+import hashlib
 
 from tabs import Tabs
 
@@ -54,7 +54,7 @@ class Login(ttk.Frame):
             self.entry_username.focus_set()
             self.lbl_error.config(text="Please fill out all fields.")
             return
-        
+
         elif self.validate(get_name, get_password):
             Tabs(self, get_name)
             self.clear_entry()
@@ -65,14 +65,20 @@ class Login(ttk.Frame):
     def validate(self, get_name, get_password):
         conn = sqlite3.connect("posdb.db")
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM employees WHERE username = '{get_name}' AND password = '{get_password}'")
+        cursor.execute(f"SELECT salt FROM employees WHERE username = '{get_name}'")
+        salt = cursor.fetchall()
+        pswd = self.get_hash(salt, get_password)
+        cursor.execute(f"SELECT * FROM employees WHERE username = '{get_name}' AND password = '{pswd}'")
         result = cursor.fetchall()
-        if result:
-            return True
-        else:
-            return False
-            
+        conn.close()
+        return bool(result)
+
     def clear_entry(self):
         self.entry_username.delete(0, "end")
         self.entry_password.delete(0, "end")
         self.lbl_error.config(text="")
+
+    def get_hash(self, salt, password):
+        text = salt+password
+        result = hashlib.sha256(text)
+        return result.hexdigest()

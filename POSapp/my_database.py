@@ -44,6 +44,15 @@ def create_database():
         if cursor.fetchone() == 'Admin':
             pass
         else:
-            cursor.execute('''INSERT INTO employees (username, complete_name, password) VALUES ('Admin', 'Administrator', 'admin')''')
+            cursor.execute('''INSERT INTO employees (
+                username,
+                complete_name,
+                password
+                )
+                VALUES (
+                    'Admin',
+                    'Administrator',
+                    'admin'
+                    )''')
             conn.commit()
     conn.close()
