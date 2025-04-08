@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
+import argon2
 
 DATABASE = 'file:posdb.db?mode=rw'
 
@@ -57,17 +58,20 @@ class AddUser(ttk.Frame):
         if complete_name == "" or username == "" or password == "":
             self.lbl_error.config(text="Please fill out all fields.")
         else:
+            hasher = argon2.PasswordHasher()
+            key = hasher.hash(password)
             conn = sqlite3.connect(DATABASE, uri=True)
             cursor = conn.cursor()
             try:
                 cursor.execute(f'''INSERT INTO employees (
                     username,
                     complete_name,
+                    salt,
                     password)
                     VALUES (
                     '{self.entry_username.get()}',
                     '{self.entry_complete_name.get()}',
-                    '{self.entry_password.get()}'
+                    '{key}'
                     )
                 ''')
                 conn.commit()
@@ -85,7 +89,7 @@ class AddUser(ttk.Frame):
         self.entry_username.delete(0, "end")
         self.entry_password.delete(0, "end")
         self.lbl_error.config(text="")
-
+        self.entry_complete_name.focus_set()
 
 class UserList(ttk.Frame):
     '''

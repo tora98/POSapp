@@ -1,5 +1,11 @@
 import sqlite3
+import argon2
 
+
+def get_hash(password):
+    hasher = argon2.PasswordHasher()
+    key = hasher.hash(password)
+    return key
 
 def create_database():
     try:
@@ -44,7 +50,9 @@ def create_database():
         if cursor.fetchone() == 'Admin':
             pass
         else:
-            cursor.execute('''INSERT INTO employees (
+            pwd = 'admin'
+            hashed_password = get_hash(pwd)
+            cursor.execute(f'''INSERT INTO employees (
                 username,
                 complete_name,
                 password
@@ -52,7 +60,10 @@ def create_database():
                 VALUES (
                     'Admin',
                     'Administrator',
-                    'admin'
+                    '{hashed_password}'
                     )''')
             conn.commit()
     conn.close()
+
+
+create_database()
