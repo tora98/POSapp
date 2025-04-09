@@ -47,6 +47,7 @@ class ProductEntry(ttk.Frame):
         self.lbl_price_per_unit.pack(pady=(10,0))
         self.entry_price_per_unit = ttk.Entry(self, font=("Arial", 30))
         self.entry_price_per_unit.pack(pady=(0, 10))
+
         self.insert(product_name, manufacturer, packaging_units, price_per_unit)
 
         self.lbl_error = ttk.Label(self, text="", foreground="red", font=("Helvetica", 10))
@@ -60,6 +61,8 @@ class ProductEntry(ttk.Frame):
         self.btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel)
         self.btn_cancel.pack(side="left", pady=10, expand=True)
 
+        self.entry_price_per_unit.bind('<Return>', self.add_product)
+
         self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
 
     def insert(self, product_name, manufacturer, packaging_units, price_per_unit):
@@ -68,7 +71,7 @@ class ProductEntry(ttk.Frame):
         self.entry_packaging_units.insert("end", packaging_units)
         self.entry_price_per_unit.insert("end", price_per_unit)
 
-    def add_product(self):
+    def add_product(self, event=None):
         '''
         Add a product to the database
         '''
@@ -91,12 +94,14 @@ class ProductEntry(ttk.Frame):
                     product_name,
                     manufacturer,
                     packaging_units,
-                    price_per_unit
+                    price_per_unit,
+                    state
                     ) VALUES (
                     '{product_name}',
                     '{manufacturer}',
                     '{packaging_units}',
-                    '{price_per_unit}'
+                    '{price_per_unit}',
+                    'available'
                     )
                 ''')
                 conn.commit()
@@ -153,19 +158,22 @@ class ProductList(ttk.Frame):
             "product_name",
             "manufacturer",
             "packaging_units",
-            "price_per_unit"),
+            "price_per_unit",
+            "state"),
             show="headings"
             )
-        self.tree.column("product_id", width=0)
+        self.tree.column("product_id", width=10)
         self.tree.heading("product_id", text="ID")
-        self.tree.column("product_name", width=200)
+        self.tree.column("product_name", width=150)
         self.tree.heading("product_name", text="Product Name")
-        self.tree.column("manufacturer", width=200)
+        self.tree.column("manufacturer", width=150)
         self.tree.heading("manufacturer", text="Manufacturer")
-        self.tree.column("packaging_units", width=200)
+        self.tree.column("packaging_units", width=100)
         self.tree.heading("packaging_units", text="Packaging Units")
-        self.tree.column("price_per_unit", width=200)
+        self.tree.column("price_per_unit", width=100)
         self.tree.heading("price_per_unit", text="Price Per Unit")
+        self.tree.column("state", width=100)
+        self.tree.heading("state", text="State")
         self.tree.pack(expand=True, fill="both")
 
         self.refresh_table()
@@ -196,7 +204,7 @@ class ProductList(ttk.Frame):
         self.tree.delete(*self.tree.get_children())
         conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM products")
+        cursor.execute("SELECT * FROM products WHERE state = 'available'")
         rows = cursor.fetchall()
         for row in rows:
             self.tree.insert("", "end", values=row)
@@ -204,14 +212,16 @@ class ProductList(ttk.Frame):
 
     def delete_product(self):
         '''
-        Deletes a product from the database
+        Disables a product from the database
         '''
         selected = self.tree.selection()
         selected_id = self.tree.item(selected[0], "values")
         item_id = selected_id[0]
         conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
         cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM products WHERE product_id = {item_id}")
+        cursor.execute(f'''UPDATE products SET
+            state = 'unavailable'
+            WHERE product_id = {item_id}''')
         conn.commit()
         conn.close()
         self.refresh_table()
