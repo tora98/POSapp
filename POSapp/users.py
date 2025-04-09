@@ -39,11 +39,13 @@ class AddUser(ttk.Frame):
         self.lbl_password.pack(pady=(10, 0))
         self.entry_password = ttk.Entry(self, font=("Arial", 30))
         self.entry_password.pack()
+
+        self.entry_password.bind('<Return>', self.add_user)
+
         self.lbl_error = ttk.Label(self, text="")
         self.lbl_error.pack(pady=10)
         self.btn_add = ttk.Button(self, text="Add", command=self.add_user)
         self.btn_add.pack(side="left", pady=10, expand=True)
-        self.btn_add.bind("<Return>", self.add_user)
         self.btn_clear = ttk.Button(self, text="Clear", command=self.clear_entry)
         self.btn_clear.pack(side="left", pady=10, expand=True)
         self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
@@ -90,6 +92,7 @@ class AddUser(ttk.Frame):
         self.entry_password.delete(0, "end")
         self.lbl_error.config(text="")
         self.entry_complete_name.focus_set()
+
 
 class UserList(ttk.Frame):
     '''
