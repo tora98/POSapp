@@ -10,10 +10,18 @@ class About(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.lbl_about = ttk.Label(
+        ttk.Label(
             self,
-            text="   This is a POS System App\n\n               Created by:\n\n            tora98\nFor Educational Purposes Only",
+            text="This is a POS System App",
             anchor="center",
-            font=("Helvetica", 20)
-            )
-        self.lbl_about.pack(pady=10, expand=True, fill="both")
+            font=("Helvetica", 20)).pack(pady=10, expand=True, fill="both")
+        ttk.Label(
+            self,
+            text="Created by Tora98",
+            anchor="center",
+            font=("Helvetica", 20)).pack(pady=10, expand=True, fill="both")
+        ttk.Label(
+            self,
+            text="For Educational Purposes!",
+            anchor="center",
+            font=("Helvetica", 20)).pack(pady=10, expand=True, fill="both")
