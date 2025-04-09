@@ -28,7 +28,8 @@ def create_database():
                 product_name TEXT NOT NULL,
                 manufacturer TEXT NOT NULL,
                 packaging_units TEXT NOT NULL,
-                price_per_unit REAL NOT NULL
+                price_per_unit REAL NOT NULL,
+                state TEXT NOT NULL
             )
         ''')
         conn.commit()
