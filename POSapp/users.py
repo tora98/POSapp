@@ -1,9 +1,8 @@
-import tkinter as tk
 from tkinter import ttk
 import sqlite3
 import argon2
 
-DATABASE = 'file:posdb.db?mode=rw'
+from POSapp.login import DATABASE
 
 
 class Users(ttk.Frame):
@@ -119,7 +118,7 @@ class UserList(ttk.Frame):
         selected = self.tree.selection()
         selected_cname = self.tree.item(selected[0], "values")
         username = selected_cname[1]
-        conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+        conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
         cursor.execute(f"DELETE FROM employees WHERE username = '{username}'")
         conn.commit()

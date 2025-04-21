@@ -1,7 +1,54 @@
-import tkinter as tk
+'''Scrollbar update by claude
+def __init__(self, master):
+    super().__init__(master)
+    
+    # Create a frame to hold the treeview and scrollbar
+    tree_frame = ttk.Frame(master)
+    tree_frame.pack(expand=True, fill="both")
+    
+    # Create the scrollbars
+    y_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
+    x_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
+    
+    # Create the treeview
+    self.tree = ttk.Treeview(tree_frame, columns=(
+        "product_id",
+        "product_name",
+        "manufacturer",
+        "packaging_units",
+        "price_per_unit",
+        "state"),
+        show="headings",
+        yscrollcommand=y_scrollbar.set,
+        xscrollcommand=x_scrollbar.set
+        )
+    
+    # Configure the scrollbars
+    y_scrollbar.config(command=self.tree.yview)
+    x_scrollbar.config(command=self.tree.xview)
+    
+    # Place the treeview and scrollbars
+    self.tree.grid(row=0, column=0, sticky="nsew")
+    y_scrollbar.grid(row=0, column=1, sticky="ns")
+    x_scrollbar.grid(row=1, column=0, sticky="ew")
+    
+    # Configure the grid weights
+    tree_frame.columnconfigure(0, weight=1)
+    tree_frame.rowconfigure(0, weight=1)
+    
+    # Configure columns and headings
+    self.tree.column("product_id", width=10)
+    self.tree.heading("product_id", text="ID")
+    # ... other column configurations ...
+    
+    # Rest of your code...
+    '''
+# update sql queries to avoid sql injection using parameterized queries
 from tkinter import ttk
 import sqlite3
 from typing import List
+
+from POSapp.login import DATABASE
 
 
 class Products(ttk.Frame):
@@ -83,7 +130,7 @@ class ProductEntry(ttk.Frame):
         if get_product_name == "" or get_manufacturer == "" or get_packaging_units == "" or get_price_per_unit == "":
             self.lbl_error.config(text="Please fill out all fields.")
         else:
-            conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+            conn = sqlite3.connect(DATABASE, uri=True)
             cursor = conn.cursor()
             try:
                 product_name = self.entry_product_name.get()
@@ -123,7 +170,7 @@ class ProductEntry(ttk.Frame):
         self.lbl_error.config(text="")
 
     def update(self):
-        conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+        conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
 
         get_product_name = self.entry_product_name.get()
@@ -131,14 +178,21 @@ class ProductEntry(ttk.Frame):
         get_packaging_units = self.entry_packaging_units.get()
         get_price_per_unit = self.entry_price_per_unit.get()
 
-        cursor.execute(f'''UPDATE products SET
-            product_name = '{get_product_name}',
-            manufacturer = '{get_manufacturer}',
-            packaging_units = '{get_packaging_units}',
-            price_per_unit = '{get_price_per_unit}'
-            WHERE product_id = {self.product_ID}''')
+        cursor.execute('''UPDATE products SET
+            product_name = ?,
+            manufacturer = ?,
+            packaging_units = ?,
+            price_per_unit = ?
+            WHERE product_id = ?''',
+            (get_product_name, get_manufacturer, get_packaging_units, get_price_per_unit, self.product_ID))
+
         conn.commit()
         conn.close()
+
+        # Refresh the table after update
+        for widget in self.master.winfo_children():
+            if isinstance(widget, ProductList):
+                widget.refresh_table()
 
     def cancel(self):
         self.destroy()
@@ -183,26 +237,42 @@ class ProductList(ttk.Frame):
         self.btn_delete = ttk.Button(self, text="Delete", command=self.delete_product)
         self.btn_delete.pack(side="left", pady=10, expand=True)
 
-        # if self.tree.selection():
-        #     product_ID = self.tree.item(self.tree.selection())['values'][0]
-        #     product_name = self.tree.item(self.tree.selection())['values'][1]
-        #     manufacturer = self.tree.item(self.tree.selection())['values'][2]
-        #     packaging_units = self.tree.item(self.tree.selection())['values'][3]
-        #     price_per_unit = self.tree.item(self.tree.selection())['values'][4]
-        #     # TODO: Test if this works
-        #     ProductEntry(product_ID, product_name, manufacturer, packaging_units, price_per_unit)
-
-        # else:
-        #     pass
+        self.tree.bind('<<TreeviewSelect>>', self.on_tree_select)
 
         self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
+
+    def on_tree_select(self, event=None):
+        # First check if anything is actually selected
+        selected_items = self.tree.selection()
+        if not selected_items:
+            return  # No selection, do nothing
+
+        try:
+            # Get the values from the selected item
+            values = self.tree.item(selected_items[0], 'values')
+            product_ID = values[0]
+            product_name = values[1]
+            manufacturer = values[2]
+            packaging_units = values[3]
+            price_per_unit = values[4]
+
+            # Remove existing ProductEntry frame if it exists
+            for widget in self.master.winfo_children():
+                if isinstance(widget, ProductEntry):
+                    widget.destroy()
+
+            # Create a new ProductEntry with the selected product's data
+            ProductEntry(self.master, product_ID, product_name, manufacturer, packaging_units, price_per_unit)
+
+        except (IndexError, TypeError) as e:
+            print(f"Error handling selection: {e}")
 
     def refresh_table(self) -> None:
         '''
         Refreshes the table
         '''
         self.tree.delete(*self.tree.get_children())
-        conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+        conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM products WHERE state = 'available'")
         rows = cursor.fetchall()
@@ -215,9 +285,11 @@ class ProductList(ttk.Frame):
         Disables a product from the database
         '''
         selected = self.tree.selection()
+        if not selected:
+            return
         selected_id = self.tree.item(selected[0], "values")
         item_id = selected_id[0]
-        conn = sqlite3.connect('file:posdb.db?mode=rw', uri=True)
+        conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
         cursor.execute(f'''UPDATE products SET
             state = 'unavailable'

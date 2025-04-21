@@ -1,6 +1,4 @@
-'''
-Main application class
-'''
+'''Main Window'''
 
 # tandard Library Import
 import tkinter as tk
@@ -12,7 +10,7 @@ import my_database
 
 class Application(tk.Tk):
     '''
-    Main application class
+    Main Window class
     '''
 
     def __init__(self) -> None:
