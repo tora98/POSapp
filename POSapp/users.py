@@ -2,7 +2,7 @@ from tkinter import ttk
 import sqlite3
 import argon2
 
-from POSapp.login import DATABASE
+DATABASE = 'file:posdb.db?mode=rw'
 
 
 class Users(ttk.Frame):

@@ -1,6 +1,6 @@
 from tkinter import ttk
 
-from main import Main
+from window import Window
 from products import Products
 from users import Users
 from about import About
@@ -16,7 +16,7 @@ class Tabs(ttk.Notebook):
         super().__init__(master)
 
         if user == "Admin":
-            self.maintab = Main(self, user)
+            self.maintab = Window(self, user)
             self.productstab = Products(self)
             self.adduserstab = Users(self)
             self.abouttab = About(self)
@@ -28,7 +28,7 @@ class Tabs(ttk.Notebook):
             self.add(self.settingstab, text="Settings")
 
         else:
-            self.maintab = Main(self, user)
+            self.maintab = Window(self, user)
             self.productstab = Products(self)
             self.settingstab = Settings(self)
             self.add(self.maintab, text="Daily Sales")

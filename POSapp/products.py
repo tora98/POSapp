@@ -48,7 +48,7 @@ from tkinter import ttk
 import sqlite3
 from typing import List
 
-from POSapp.login import DATABASE
+DATABASE = 'file:posdb.db?mode=rw'
 
 
 class Products(ttk.Frame):
