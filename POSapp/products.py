@@ -1,15 +1,15 @@
-'''Scrollbar update by claude
+"""Scrollbar update by claude
 def __init__(self, master):
     super().__init__(master)
-    
+
     # Create a frame to hold the treeview and scrollbar
     tree_frame = ttk.Frame(master)
     tree_frame.pack(expand=True, fill="both")
-    
+
     # Create the scrollbars
     y_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
     x_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
-    
+
     # Create the treeview
     self.tree = ttk.Treeview(tree_frame, columns=(
         "product_id",
@@ -22,39 +22,39 @@ def __init__(self, master):
         yscrollcommand=y_scrollbar.set,
         xscrollcommand=x_scrollbar.set
         )
-    
+
     # Configure the scrollbars
     y_scrollbar.config(command=self.tree.yview)
     x_scrollbar.config(command=self.tree.xview)
-    
+
     # Place the treeview and scrollbars
     self.tree.grid(row=0, column=0, sticky="nsew")
     y_scrollbar.grid(row=0, column=1, sticky="ns")
     x_scrollbar.grid(row=1, column=0, sticky="ew")
-    
+
     # Configure the grid weights
     tree_frame.columnconfigure(0, weight=1)
     tree_frame.rowconfigure(0, weight=1)
-    
+
     # Configure columns and headings
     self.tree.column("product_id", width=10)
     self.tree.heading("product_id", text="ID")
     # ... other column configurations ...
-    
+
     # Rest of your code...
-    '''
+"""
+
 # update sql queries to avoid sql injection using parameterized queries
 from tkinter import ttk
 import sqlite3
-from typing import List
 
-DATABASE = 'file:posdb.db?mode=rw'
+DATABASE = "file:posdb.db?mode=rw"
 
 
 class Products(ttk.Frame):
-    '''
+    """
     Frame for adding new products
-    '''
+    """
 
     def __init__(self, master):
         super().__init__(master)
@@ -69,7 +69,15 @@ class Products(ttk.Frame):
 
 
 class ProductEntry(ttk.Frame):
-    def __init__(self, master, product_ID, product_name, manufacturer, packaging_units, price_per_unit):
+    def __init__(
+        self,
+        master,
+        product_ID,
+        product_name,
+        manufacturer,
+        packaging_units,
+        price_per_unit,
+    ):
         super().__init__(master)
 
         self.product_ID = product_ID
@@ -78,26 +86,38 @@ class ProductEntry(ttk.Frame):
         self.packaging_units = packaging_units
         self.price_per_unit = price_per_unit
 
-        self.lbl_product_name = ttk.Label(self, text="Product Name:", font=("Helvetica", 20))
+        self.lbl_product_name = ttk.Label(
+            self, text="Product Name:", font=("Helvetica", 20)
+        )
         self.lbl_product_name.pack(pady=(10, 0))
         self.entry_product_name = ttk.Entry(self, font=("Arial", 30))
         self.entry_product_name.pack(pady=(0, 10))
-        self.lbl_manufacturer = ttk.Label(self, text="Manufacturer:", font=("Helvetica", 20))
+        self.lbl_manufacturer = ttk.Label(
+            self, text="Manufacturer:", font=("Helvetica", 20)
+        )
         self.lbl_manufacturer.pack(pady=(10, 0))
         self.entry_manufacturer = ttk.Entry(self, font=("Arial", 30))
         self.entry_manufacturer.pack(pady=(0, 10))
-        self.lbl_packaging_units = ttk.Label(self, text="Packaging Units (Number of kilos or pieces per Bag/Box/Bottle):", font=("Helvetica", 10))
-        self.lbl_packaging_units.pack(pady=(10,0))
+        self.lbl_packaging_units = ttk.Label(
+            self,
+            text="Packaging Units (Number of kilos or pieces per Bag/Box/Bottle):",
+            font=("Helvetica", 10),
+        )
+        self.lbl_packaging_units.pack(pady=(10, 0))
         self.entry_packaging_units = ttk.Entry(self, font=("Arial", 30))
         self.entry_packaging_units.pack(pady=(0, 10))
-        self.lbl_price_per_unit = ttk.Label(self, text="Price Per Unit:", font=("Helvetica", 20))
-        self.lbl_price_per_unit.pack(pady=(10,0))
+        self.lbl_price_per_unit = ttk.Label(
+            self, text="Price Per Unit:", font=("Helvetica", 20)
+        )
+        self.lbl_price_per_unit.pack(pady=(10, 0))
         self.entry_price_per_unit = ttk.Entry(self, font=("Arial", 30))
         self.entry_price_per_unit.pack(pady=(0, 10))
 
         self.insert(product_name, manufacturer, packaging_units, price_per_unit)
 
-        self.lbl_error = ttk.Label(self, text="", foreground="red", font=("Helvetica", 10))
+        self.lbl_error = ttk.Label(
+            self, text="", foreground="red", font=("Helvetica", 10)
+        )
         self.lbl_error.pack(pady=10)
         self.btn_add = ttk.Button(self, text="Add", command=self.add_product)
         self.btn_add.pack(side="left", pady=10, expand=True)
@@ -108,7 +128,7 @@ class ProductEntry(ttk.Frame):
         self.btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel)
         self.btn_cancel.pack(side="left", pady=10, expand=True)
 
-        self.entry_price_per_unit.bind('<Return>', self.add_product)
+        self.entry_price_per_unit.bind("<Return>", self.add_product)
 
         self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
 
@@ -119,15 +139,20 @@ class ProductEntry(ttk.Frame):
         self.entry_price_per_unit.insert("end", price_per_unit)
 
     def add_product(self, event=None):
-        '''
+        """
         Add a product to the database
-        '''
+        """
         get_product_name = self.entry_product_name.get()
         get_manufacturer = self.entry_manufacturer.get()
         get_packaging_units = self.entry_packaging_units.get()
         get_price_per_unit = self.entry_price_per_unit.get()
 
-        if get_product_name == "" or get_manufacturer == "" or get_packaging_units == "" or get_price_per_unit == "":
+        if (
+            get_product_name == ""
+            or get_manufacturer == ""
+            or get_packaging_units == ""
+            or get_price_per_unit == ""
+        ):
             self.lbl_error.config(text="Please fill out all fields.")
         else:
             conn = sqlite3.connect(DATABASE, uri=True)
@@ -137,7 +162,7 @@ class ProductEntry(ttk.Frame):
                 manufacturer = self.entry_manufacturer.get()
                 packaging_units = self.entry_packaging_units.get()
                 price_per_unit = self.entry_price_per_unit.get()
-                cursor.execute(f'''INSERT INTO products (
+                cursor.execute(f"""INSERT INTO products (
                     product_name,
                     manufacturer,
                     packaging_units,
@@ -150,7 +175,7 @@ class ProductEntry(ttk.Frame):
                     '{price_per_unit}',
                     'available'
                     )
-                ''')
+                """)
                 conn.commit()
                 conn.close()
                 self.lbl_error.config(text="Product added successfully.")
@@ -160,9 +185,9 @@ class ProductEntry(ttk.Frame):
                 self.lbl_error.config(text=str(err))
 
     def clear_entry(self):
-        '''
+        """
         Clear the entry fields
-        '''
+        """
         self.entry_product_name.delete(0, "end")
         self.entry_manufacturer.delete(0, "end")
         self.entry_packaging_units.delete(0, "end")
@@ -178,13 +203,21 @@ class ProductEntry(ttk.Frame):
         get_packaging_units = self.entry_packaging_units.get()
         get_price_per_unit = self.entry_price_per_unit.get()
 
-        cursor.execute('''UPDATE products SET
+        cursor.execute(
+            """UPDATE products SET
             product_name = ?,
             manufacturer = ?,
             packaging_units = ?,
             price_per_unit = ?
-            WHERE product_id = ?''',
-            (get_product_name, get_manufacturer, get_packaging_units, get_price_per_unit, self.product_ID))
+            WHERE product_id = ?""",
+            (
+                get_product_name,
+                get_manufacturer,
+                get_packaging_units,
+                get_price_per_unit,
+                self.product_ID,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -199,23 +232,26 @@ class ProductEntry(ttk.Frame):
 
 
 class ProductList(ttk.Frame):
-    '''
+    """
     Frame for product table
-    '''
+    """
 
     def __init__(self, master):
         super().__init__(master)
         # TODO: Add scrollbar to treeview
 
-        self.tree = ttk.Treeview(master, columns=(
-            "product_id",
-            "product_name",
-            "manufacturer",
-            "packaging_units",
-            "price_per_unit",
-            "state"),
-            show="headings"
-            )
+        self.tree = ttk.Treeview(
+            master,
+            columns=(
+                "product_id",
+                "product_name",
+                "manufacturer",
+                "packaging_units",
+                "price_per_unit",
+                "state",
+            ),
+            show="headings",
+        )
         self.tree.column("product_id", width=10)
         self.tree.heading("product_id", text="ID")
         self.tree.column("product_name", width=150)
@@ -237,7 +273,7 @@ class ProductList(ttk.Frame):
         self.btn_delete = ttk.Button(self, text="Delete", command=self.delete_product)
         self.btn_delete.pack(side="left", pady=10, expand=True)
 
-        self.tree.bind('<<TreeviewSelect>>', self.on_tree_select)
+        self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
 
         self.pack(expand=True, fill="both", side="left", ipadx=10, ipady=10)
 
@@ -249,7 +285,7 @@ class ProductList(ttk.Frame):
 
         try:
             # Get the values from the selected item
-            values = self.tree.item(selected_items[0], 'values')
+            values = self.tree.item(selected_items[0], "values")
             product_ID = values[0]
             product_name = values[1]
             manufacturer = values[2]
@@ -262,15 +298,22 @@ class ProductList(ttk.Frame):
                     widget.destroy()
 
             # Create a new ProductEntry with the selected product's data
-            ProductEntry(self.master, product_ID, product_name, manufacturer, packaging_units, price_per_unit)
+            ProductEntry(
+                self.master,
+                product_ID,
+                product_name,
+                manufacturer,
+                packaging_units,
+                price_per_unit,
+            )
 
         except (IndexError, TypeError) as e:
             print(f"Error handling selection: {e}")
 
     def refresh_table(self) -> None:
-        '''
+        """
         Refreshes the table
-        '''
+        """
         self.tree.delete(*self.tree.get_children())
         conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
@@ -281,9 +324,9 @@ class ProductList(ttk.Frame):
         conn.close()
 
     def delete_product(self):
-        '''
+        """
         Disables a product from the database
-        '''
+        """
         selected = self.tree.selection()
         if not selected:
             return
@@ -291,9 +334,9 @@ class ProductList(ttk.Frame):
         item_id = selected_id[0]
         conn = sqlite3.connect(DATABASE, uri=True)
         cursor = conn.cursor()
-        cursor.execute(f'''UPDATE products SET
+        cursor.execute(f"""UPDATE products SET
             state = 'unavailable'
-            WHERE product_id = {item_id}''')
+            WHERE product_id = {item_id}""")
         conn.commit()
         conn.close()
         self.refresh_table()
