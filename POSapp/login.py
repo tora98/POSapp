@@ -1,7 +1,4 @@
-'''
-Application Frames
-'''
-import tkinter as tk
+#Application Frames
 from tkinter import ttk
 import sqlite3
 import argon2
@@ -11,14 +8,10 @@ DATABASE = 'file:posdb.db?mode=rw'
 
 
 class Login(ttk.Frame):
-    '''
-    Login Frame
-    '''
+    #Login Frame
 
     def __init__(self, master):
         super().__init__(master)
-        # TODO: Add Validation for users with hash
-
         self.myframe = ttk.Frame(self)
 
         self.lbl_username = ttk.Label(self.myframe, text="User Name:", font=("Helvetica", 20))
@@ -43,11 +36,8 @@ class Login(ttk.Frame):
         self.place(x=0, y=0, relwidth=1, relheight=1)
 
     def show_tabs(self, event=None) -> None:
-        """
-        Replace the current frame with the tabs frame after successful login.
+        #Replace the current frame with the tabs frame after successful login.
 
-        :returns: None
-        """
         # Validate users from database
         get_name = self.entry_username.get()
         get_password = self.entry_password.get()

@@ -1,32 +1,19 @@
-'''Main Window'''
-
-# Standard Library Import
 import tkinter as tk
 
-# Local Library Import
 from login import Login
 import my_database
 
 
 class Application(tk.Tk):
-    '''
-    Main Application class
-    '''
-
+    #Main Application class
     def __init__(self) -> None:
         super().__init__()
-        # initialize main window
         self.title("Delles Agri-Poultry Supply")
         self.geometry("1000x600")
         self.minsize(1000, 600)
-        self.state("zoomed")
-
-        # add frame segments to window
+        self.state("normal")
         self.current_frame: Login = Login(self)
-        # run the mainloop
         self.mainloop()
-
-# call the app to run
 
 
 if __name__ == "__main__":

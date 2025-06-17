@@ -3,9 +3,7 @@ from tkinter import ttk
 
 
 class About(ttk.Frame):
-    '''
-    Show information about the app
-    '''
+    #Show information about the app
 
     def __init__(self, master):
         super().__init__(master)

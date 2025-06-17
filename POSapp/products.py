@@ -1,49 +1,3 @@
-"""Scrollbar update by claude
-def __init__(self, master):
-    super().__init__(master)
-
-    # Create a frame to hold the treeview and scrollbar
-    tree_frame = ttk.Frame(master)
-    tree_frame.pack(expand=True, fill="both")
-
-    # Create the scrollbars
-    y_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
-    x_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
-
-    # Create the treeview
-    self.tree = ttk.Treeview(tree_frame, columns=(
-        "product_id",
-        "product_name",
-        "manufacturer",
-        "packaging_units",
-        "price_per_unit",
-        "state"),
-        show="headings",
-        yscrollcommand=y_scrollbar.set,
-        xscrollcommand=x_scrollbar.set
-        )
-
-    # Configure the scrollbars
-    y_scrollbar.config(command=self.tree.yview)
-    x_scrollbar.config(command=self.tree.xview)
-
-    # Place the treeview and scrollbars
-    self.tree.grid(row=0, column=0, sticky="nsew")
-    y_scrollbar.grid(row=0, column=1, sticky="ns")
-    x_scrollbar.grid(row=1, column=0, sticky="ew")
-
-    # Configure the grid weights
-    tree_frame.columnconfigure(0, weight=1)
-    tree_frame.rowconfigure(0, weight=1)
-
-    # Configure columns and headings
-    self.tree.column("product_id", width=10)
-    self.tree.heading("product_id", text="ID")
-    # ... other column configurations ...
-
-    # Rest of your code...
-"""
-
 # update sql queries to avoid sql injection using parameterized queries
 from tkinter import ttk
 import sqlite3
@@ -52,10 +6,7 @@ DATABASE = "file:posdb.db?mode=rw"
 
 
 class Products(ttk.Frame):
-    """
-    Frame for adding new products
-    """
-
+    #Frame for adding new products
     def __init__(self, master):
         super().__init__(master)
 
@@ -139,43 +90,36 @@ class ProductEntry(ttk.Frame):
         self.entry_price_per_unit.insert("end", price_per_unit)
 
     def add_product(self, event=None):
-        """
-        Add a product to the database
-        """
+        #Add a product to the database
         get_product_name = self.entry_product_name.get()
         get_manufacturer = self.entry_manufacturer.get()
         get_packaging_units = self.entry_packaging_units.get()
         get_price_per_unit = self.entry_price_per_unit.get()
 
         if (
-            get_product_name == ""
-            or get_manufacturer == ""
-            or get_packaging_units == ""
-            or get_price_per_unit == ""
+            not get_product_name
+            or not get_manufacturer
+            or not get_packaging_units
+            or not get_price_per_unit
         ):
             self.lbl_error.config(text="Please fill out all fields.")
         else:
-            conn = sqlite3.connect(DATABASE, uri=True)
-            cursor = conn.cursor()
+            conn = None
             try:
+                conn = sqlite3.connect(DATABASE, uri=True)
+                cursor = conn.cursor()
                 product_name = self.entry_product_name.get()
                 manufacturer = self.entry_manufacturer.get()
                 packaging_units = self.entry_packaging_units.get()
                 price_per_unit = self.entry_price_per_unit.get()
-                cursor.execute(f"""INSERT INTO products (
+                cursor.execute("""INSERT INTO products (
                     product_name,
                     manufacturer,
                     packaging_units,
                     price_per_unit,
                     state
-                    ) VALUES (
-                    '{product_name}',
-                    '{manufacturer}',
-                    '{packaging_units}',
-                    '{price_per_unit}',
-                    'available'
-                    )
-                """)
+                    ) VALUES (?, ?, ?, ?, ?)
+                """, (product_name, manufacturer, packaging_units, price_per_unit, "available"))
                 conn.commit()
                 conn.close()
                 self.lbl_error.config(text="Product added successfully.")
@@ -183,6 +127,9 @@ class ProductEntry(ttk.Frame):
 
             except sqlite3.IntegrityError as err:
                 self.lbl_error.config(text=str(err))
+            finally:
+                if conn:
+                    conn.close()
 
     def clear_entry(self):
         """
@@ -232,13 +179,16 @@ class ProductEntry(ttk.Frame):
 
 
 class ProductList(ttk.Frame):
-    """
-    Frame for product table
-    """
-
+    #Frame for product table
     def __init__(self, master):
         super().__init__(master)
-        # TODO: Add scrollbar to treeview
+        # Create a frame to hold the treeview and scrollbar
+        tree_frame = ttk.Frame(master)
+        tree_frame.pack(expand=True, fill="both")
+
+        # Create the scrollbars
+        y_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
+        x_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
 
         self.tree = ttk.Treeview(
             master,
@@ -251,7 +201,21 @@ class ProductList(ttk.Frame):
                 "state",
             ),
             show="headings",
+            yscrollcommand=y_scrollbar.set,
+            xscrollcommand=x_scrollbar.set
         )
+
+        y_scrollbar.config(command=self.tree.yview)
+        x_scrollbar.config(command=self.tree.xview)
+
+        # Place the treeview and scrollbars
+        self.tree.pack(side="left")
+        y_scrollbar.pack(side="left")
+        x_scrollbar.pack(side="left")
+
+        # Configure the grid weights
+        tree_frame.columnconfigure(0, weight=1)
+        tree_frame.rowconfigure(0, weight=1)
         self.tree.column("product_id", width=10)
         self.tree.heading("product_id", text="ID")
         self.tree.column("product_name", width=150)
