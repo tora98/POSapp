@@ -1,7 +1,7 @@
 import tkinter as tk
 
-from login import Login
-import my_database
+from internal import login
+from internal.database import my_database
 
 
 class Application(tk.Tk):
@@ -12,7 +12,7 @@ class Application(tk.Tk):
         self.geometry("1000x600")
         self.minsize(1000, 600)
         self.state("normal")
-        self.current_frame: Login = Login(self)
+        self.current_frame = login.Login(self)
         self.mainloop()
 
 

@@ -1,8 +1,10 @@
-from tkinter import ttk
+# TODO: Update function
+from tkinter import messagebox, ttk
 import sqlite3
 import argon2
 
-DATABASE = 'file:posdb.db?mode=rw'
+from internal.database.my_database import get_db
+DATABASE = get_db()
 
 
 class Users(ttk.Frame):
@@ -61,26 +63,28 @@ class AddUser(ttk.Frame):
         else:
             hasher = argon2.PasswordHasher()
             key = hasher.hash(password)
-            conn = sqlite3.connect(DATABASE, uri=True)
-            cursor = conn.cursor()
+            conn = None
             try:
+                conn = sqlite3.connect(DATABASE, uri=True)
+                cursor = conn.cursor()
                 cursor.execute(f'''INSERT INTO employees (
                     username,
                     complete_name,
-                    salt,
                     password)
-                    VALUES (
-                    '{self.entry_username.get()}',
-                    '{self.entry_complete_name.get()}',
-                    '{key}'
-                    )
-                ''')
+                    VALUES (?, ?, ?)''',(
+                               self.entry_username.get(),
+                               self.entry_complete_name.get(),
+                               key,))
                 conn.commit()
                 conn.close()
                 self.lbl_error.config(text="User added successfully.")
                 self.clear_entry()
             except sqlite3.IntegrityError as err:
                 self.lbl_error.config(text=str(err))
+            
+            finally:
+                if conn:
+                    conn.close()
 
     def clear_entry(self):
         '''
@@ -118,11 +122,20 @@ class UserList(ttk.Frame):
         selected = self.tree.selection()
         selected_cname = self.tree.item(selected[0], "values")
         username = selected_cname[1]
-        conn = sqlite3.connect(DATABASE, uri=True)
-        cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM employees WHERE username = '{username}'")
-        conn.commit()
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(DATABASE, uri=True)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM employees WHERE username = ?", (username,))
+            conn.commit()
+            conn.close()
+        except sqlite3.DatabaseError as err:
+            messagebox.showerror("Error", f"Database Error: {err}")
+
+        finally:
+            if conn:
+                conn.close()
+
         self.refresh_table()
 
     def update_item(self):
@@ -136,12 +149,21 @@ class UserList(ttk.Frame):
         Refresh table
         '''
         self.tree.delete(*self.tree.get_children())
-        conn = sqlite3.connect(DATABASE, uri=True)
-        cursor = conn.cursor()
-        cursor.execute("SELECT username, complete_name FROM employees")
-        rows = cursor.fetchall()
-        for row in rows:
-            username = row[0]
-            complete_name = row[1]
-            self.tree.insert("", "end", values=(complete_name, username))
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(DATABASE, uri=True)
+            cursor = conn.cursor()
+            cursor.execute("SELECT username, complete_name FROM employees")
+            rows = cursor.fetchall()
+            for row in rows:
+                username = row[0]
+                complete_name = row[1]
+                self.tree.insert("", "end", values=(complete_name, username))
+            conn.close()
+
+        except sqlite3.DatabaseError as err:
+            messagebox.showerror("Error", f"Database Error: {err}")
+
+        finally:
+            if conn:
+                conn.close()

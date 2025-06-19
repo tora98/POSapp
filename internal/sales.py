@@ -5,7 +5,8 @@ from tkinter import ttk, messagebox
 
 from ttkwidgets.autocomplete import AutocompleteCombobox
 
-DATABASE = "file:posdb.db?mode=rw"
+from internal.database.my_database import get_db
+DATABASE = get_db()
 
 
 class Window(ttk.Frame):
@@ -117,14 +118,18 @@ class Window(ttk.Frame):
                 try:
                     conn = sqlite3.connect(DATABASE, uri=True)
                     cursor = conn.cursor()
-                    cursor.execute("SELECT manufacturer, product_name FROM products")
+                    cursor.execute("SELECT product_name FROM products")
                     rows = cursor.fetchall()
+                    conn.close()
+
+                    if not rows:
+                        messagebox.showinfo("Info", "Empty product list")
 
                     for row in rows:
-                        item = f"{row[0]} - {row[1]}"
+                        item = row[0]
                         product_list.append(item)
 
-                except sqlite3.Error as err:
+                except sqlite3.DatabaseError as err:
                     messagebox.showerror(
                         "Database Error", f"failed to load products: {err}"
                     )
@@ -143,26 +148,25 @@ class Window(ttk.Frame):
 
                 get_item_name = self.combo_item.get()
                 if not get_item_name:
-                    messagebox.showerror("Error", "Please select an item")
+                    messagebox.showwarning("Warning", "Please select an item")
 
                 get_item_quantity = self.spinbox_quantity.get()
                 if not get_item_quantity:
-                    messagebox.showerror("Error", "Please enter a quantity")
+                    messagebox.showwarning("Warning", "Please enter a quantity")
 
                 try:
                     quantity = float(get_item_quantity)
                     if quantity <= 0:
-                        messagebox.showwarning(
+                        messagebox.showerror(
                             "Input Error", "Quantity must be greater than 0."
                         )
                         return
 
                 except ValueError:
-                    messagebox.showwarning("Input Error", "Quantity must be a number.")
+                    messagebox.showerror("Input Error", "Quantity must be a number.")
                     return
 
                 conn = None
-
                 try:
                     conn = sqlite3.connect(DATABASE, uri=True)
                     cursor = conn.cursor()
@@ -174,8 +178,9 @@ class Window(ttk.Frame):
                         (curr_date, item_id, get_item_quantity, total_price, user_id),
                     )
                     conn.commit()
+                    conn.close()
 
-                except sqlite3.Error as err:
+                except sqlite3.DatabaseError as err:
                     messagebox.showerror("DatabaseError", f"Database Error: {err}")
 
                 finally:
@@ -185,7 +190,6 @@ class Window(ttk.Frame):
             def get_total_price(self, item_name, quantity):
                 total = 0
                 conn = None
-
                 try:
                     conn = sqlite3.connect(DATABASE, uri=True)
                     cursor = conn.cursor()
@@ -195,8 +199,9 @@ class Window(ttk.Frame):
                     )
                     price = cursor.fetchone()
                     total = float(quantity) * price[0]
+                    conn.close()
 
-                except sqlite3.Error as err:
+                except sqlite3.DatabaseError as err:
                     messagebox.showerror(
                         "Database Error", f"Failed to get total price: {err}"
                     )
@@ -207,22 +212,25 @@ class Window(ttk.Frame):
                     return total
 
             def get_product_id(self, product_name):
-                if not product_name or " - " not in product_name:
-                    return None
+                if not product_name:
+                    return
 
-                manufacturer, name = product_name.split(" - ", 1)
                 conn = None
                 try:
                     conn = sqlite3.connect(DATABASE, uri=True)
                     cursor = conn.cursor()
                     cursor.execute(
-                        "SELECT id FROM products WHERE manufacturer = '?' AND product_name = '?'",
-                        (manufacturer, name),
+                        "SELECT id FROM products WHERE product_name = '?'",
+                        (product_name,),
                     )
                     result = cursor.fetchone()
-                    return result[0] if result else None
+                    conn.close()
+                    if not result:
+                        messagebox.showinfo("Info", "Unable to fetch product id")
+                        return
+                    return result[0]
 
-                except sqlite3.Error as err:
+                except sqlite3.DatabaseError as err:
                     messagebox.showerror(
                         "Database Error", f"failed to load item id: {err}"
                     )
@@ -233,44 +241,50 @@ class Window(ttk.Frame):
                         conn.close()
 
             def get_product_price(self, product_name):
-                if not product_name or " - " not in product_name:
+                if not product_name:
                     return 0.0
 
-                manufacturer, name = product_name.split(" - ", 1)
                 conn = None
                 try:
                     conn = sqlite3.connect("posdb.db")
                     cursor = conn.cursor()
                     cursor.execute(
-                        "SELECT price FROM products WHERE manufacturer = ? AND product_name = ?",
-                        (manufacturer, name),
+                        "SELECT price FROM products WHERE product_name = ?",
+                        (product_name,),
                     )
                     result = cursor.fetchone()
-                    return float(result[0]) if result else 0.0
-                except sqlite3.Error as e:
+                    conn.close()
+                    if not result:
+                        messagebox.showinfo("Info", "Unable to fetch product price")
+                        return 0.0
+
+                    return float(result[0])
+                except sqlite3.DatabaseError as err:
                     messagebox.showerror(
-                        "Database Error", f"Failed to get product price: {e}"
+                        "Database Error", f"Failed to get product price: {err}"
                     )
                     return 0.0
+                
                 finally:
                     if conn:
                         conn.close()
 
             def update_price(self, event=None):
                 product = self.combo_item.get()
-
+                if not product:
+                    self.lbl_value.config(text="$0.00")
+                    messagebox.showwarning("Warning", "Please enter product name")
+                    return
+                
                 try:
                     quantity = int(self.spinbox_quantity.get())
                 except ValueError:
-                    quantity = 1
-                    self.spinbox_quantity.set("1")
-
-                if product:
-                    unit_price = self.get_product_price(product)
-                    total_price = unit_price * quantity
-                    self.lbl_value.config(text=f"${total_price:.2f}")
-                else:
-                    self.lbl_value.config(text="$0.00")
+                    messagebox.showerror("Error", "Quantity must be a number")
+                    return
+                
+                unit_price = self.get_product_price(product)
+                total_price = unit_price * quantity
+                self.lbl_value.config(text=f"${total_price:.2f}")
 
             def get_user_id(self, user):
                 u_id = ""
@@ -279,10 +293,14 @@ class Window(ttk.Frame):
                     conn = sqlite3.connect(DATABASE, uri=True)
                     cursor = conn.cursor()
                     cursor.execute(
-                        "SELECT * FROM employees WHERE username = '?'", (user)
+                        "SELECT * FROM employees WHERE username = '?'", (user,)
                     )
                     result = cursor.fetchone()
+                    if not result:
+                        messagebox.showinfo("Info", "Unable to fetch user id")
+
                     u_id = result[0]
+                    conn.close()
                 except sqlite3.DatabaseError as err:
                     messagebox.showerror(
                         "Database Error", f"Failed to get user id: {err}"
@@ -290,7 +308,7 @@ class Window(ttk.Frame):
                 finally:
                     if conn:
                         conn.close()
-                    return u_id
+                return u_id
 
             def clear_entry(self):
                 """
@@ -356,6 +374,7 @@ class Window(ttk.Frame):
                         self.tree.delete(item)
 
                     conn.commit()
+                    conn.close()
                     messagebox.showinfo("Success", "Item(s) deleted successfully")
 
                 except sqlite3.Error as e:
@@ -371,11 +390,12 @@ class Window(ttk.Frame):
             try:
                 conn = sqlite3.connect(DATABASE, uri=True)
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM sales WHERE date = '?'", (date))
+                cursor.execute("SELECT * FROM sales WHERE date = ?", (date,))
                 rows = cursor.fetchall()
 
                 for row in rows:
                     self.tree.insert("", "end", values=row)
+                conn.close()
 
             except sqlite3.Error as e:
                 messagebox.showerror("Database Error", f"Failed to refresh table: {e}")

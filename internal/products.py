@@ -1,8 +1,8 @@
-# update sql queries to avoid sql injection using parameterized queries
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import sqlite3
 
-DATABASE = "file:posdb.db?mode=rw"
+from internal.database.my_database import get_db
+DATABASE = get_db()
 
 
 class Products(ttk.Frame):
@@ -188,10 +188,9 @@ class ProductList(ttk.Frame):
 
         # Create the scrollbars
         y_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
-        x_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
 
         self.tree = ttk.Treeview(
-            master,
+            tree_frame,
             columns=(
                 "product_id",
                 "product_name",
@@ -201,21 +200,12 @@ class ProductList(ttk.Frame):
                 "state",
             ),
             show="headings",
-            yscrollcommand=y_scrollbar.set,
-            xscrollcommand=x_scrollbar.set
+            yscrollcommand=y_scrollbar.set
         )
 
         y_scrollbar.config(command=self.tree.yview)
-        x_scrollbar.config(command=self.tree.xview)
-
-        # Place the treeview and scrollbars
-        self.tree.pack(side="left")
-        y_scrollbar.pack(side="left")
-        x_scrollbar.pack(side="left")
 
         # Configure the grid weights
-        tree_frame.columnconfigure(0, weight=1)
-        tree_frame.rowconfigure(0, weight=1)
         self.tree.column("product_id", width=10)
         self.tree.heading("product_id", text="ID")
         self.tree.column("product_name", width=150)
@@ -228,7 +218,8 @@ class ProductList(ttk.Frame):
         self.tree.heading("price_per_unit", text="Price Per Unit")
         self.tree.column("state", width=100)
         self.tree.heading("state", text="State")
-        self.tree.pack(expand=True, fill="both")
+        self.tree.pack(expand=True, fill="both", side="left")
+        y_scrollbar.pack(fill="y", side="right")
 
         self.refresh_table()
 
@@ -279,13 +270,21 @@ class ProductList(ttk.Frame):
         Refreshes the table
         """
         self.tree.delete(*self.tree.get_children())
-        conn = sqlite3.connect(DATABASE, uri=True)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM products WHERE state = 'available'")
-        rows = cursor.fetchall()
-        for row in rows:
-            self.tree.insert("", "end", values=row)
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(DATABASE, uri=True)
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM products WHERE state = 'available'")
+            rows = cursor.fetchall()
+            for row in rows:
+                self.tree.insert("", "end", values=row)
+            conn.close()
+        except sqlite3.DatabaseError as err:
+            messagebox.showerror("Error", f"Database Error: {err}")
+            return
+        finally:
+            if conn:
+                conn.close()
 
     def delete_product(self):
         """
@@ -296,11 +295,19 @@ class ProductList(ttk.Frame):
             return
         selected_id = self.tree.item(selected[0], "values")
         item_id = selected_id[0]
-        conn = sqlite3.connect(DATABASE, uri=True)
-        cursor = conn.cursor()
-        cursor.execute(f"""UPDATE products SET
-            state = 'unavailable'
-            WHERE product_id = {item_id}""")
-        conn.commit()
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(DATABASE, uri=True)
+            cursor = conn.cursor()
+            cursor.execute("""UPDATE products SET
+                state = 'unavailable'
+                WHERE product_id = ?""", (item_id,))
+            conn.commit()
+            conn.close()
+        except sqlite3.DatabaseError as err:
+            messagebox.showerror("Error", f"Database Error: {err}")
+            return
+        finally:
+            if conn:
+                conn.close()
         self.refresh_table()

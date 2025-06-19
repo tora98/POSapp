@@ -1,4 +1,5 @@
 posdb.db
 showdb.py
-typings
+todo.py
 .vscode
+.gitignore

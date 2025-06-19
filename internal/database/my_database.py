@@ -1,6 +1,9 @@
 import sqlite3
 import argon2
 
+def get_db():
+    name = 'file:posdb.db?mode=rw'
+    return name
 
 def get_hash(password):
     hasher = argon2.PasswordHasher()
@@ -9,9 +12,10 @@ def get_hash(password):
 
 def create_database():
     try:
-        conn = sqlite3.connect('file:posdb.db?mode=ro', uri=True)
+        database = get_db()
+        conn = sqlite3.connect(database, uri=True)
     except sqlite3.Error:
-        conn = sqlite3.connect("posdb.db")
+        conn = sqlite3.connect("./posdb.db")
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS employees (

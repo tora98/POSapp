@@ -3,8 +3,9 @@ from tkinter import ttk
 import sqlite3
 import argon2
 
-from tabs import Tabs
-DATABASE = 'file:posdb.db?mode=rw'
+from internal import tabs
+from internal.database.my_database import get_db
+DATABASE = get_db()
 
 
 class Login(ttk.Frame):
@@ -49,7 +50,7 @@ class Login(ttk.Frame):
 
         try:
             if self.validate(get_name, get_password):
-                Tabs(self, get_name)
+                tabs.Tabs(self, get_name)
                 self.clear_entry()
             else:
                 self.lbl_error.config(text="Not a valid username or password.")
@@ -63,6 +64,7 @@ class Login(ttk.Frame):
             cursor = conn.cursor()
             cursor.execute("SELECT password FROM employees WHERE username = ?", (get_name,))
             pwd = cursor.fetchone()
+            conn.close()
             if not pwd:
                 return False
             stored_hash = pwd[0]
